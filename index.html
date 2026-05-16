@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1280, initial-scale=1.0">
-<title>SchooMy NDT Lab v4.0 - シリアル接続版</title>
+<title>SchooMy NDT Lab v5.0 - スナップショット比較版</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
@@ -20,6 +20,7 @@
     --gray: #6B7A99;
     --red: #E84A4A;
     --green: #4ACC8C;
+    --purple: #B975E8;
   }
   body {
     background: var(--navy-deep);
@@ -66,12 +67,8 @@
   .header-mid {
     display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center;
   }
-  .input-group {
-    display: flex; align-items: center; gap: 4px;
-  }
-  .input-label {
-    font-size: 10px; color: var(--gray-light); letter-spacing: 1px;
-  }
+  .input-group { display: flex; align-items: center; gap: 4px; }
+  .input-label { font-size: 10px; color: var(--gray-light); letter-spacing: 1px; }
   .text-input {
     background: var(--navy-deep);
     border: 1px solid var(--navy-light);
@@ -79,7 +76,7 @@
     padding: 6px 10px;
     border-radius: 4px;
     font-size: 12px;
-    width: 180px;
+    width: 160px;
     font-family: inherit;
   }
   .text-input:focus { outline: none; border-color: var(--orange); }
@@ -88,10 +85,7 @@
     font-size: 10px; color: var(--gray-light); flex-shrink: 0;
   }
   .status-led { display: flex; align-items: center; gap: 6px; }
-  .led-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--gray);
-  }
+  .led-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gray); }
   .led-dot.online {
     background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 1.5s infinite;
   }
@@ -110,12 +104,8 @@
     gap: 8px;
     padding: 8px;
   }
-  .left-col {
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .right-col {
-    display: flex; flex-direction: column; gap: 8px;
-  }
+  .left-col { display: flex; flex-direction: column; gap: 8px; }
+  .right-col { display: flex; flex-direction: column; gap: 8px; }
   .panel {
     background: var(--navy);
     border: 1px solid var(--navy-light);
@@ -193,6 +183,42 @@
   .conn-info.online { border-left-color: var(--green); }
   .conn-info .conn-status { font-weight: bold; color: var(--white); }
 
+  /* Range control */
+  .range-control {
+    background: var(--navy-deep);
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    border: 1px solid var(--navy-light);
+  }
+  .range-title {
+    font-size: 9px; color: var(--orange); font-weight: bold;
+    letter-spacing: 1px; margin-bottom: 6px;
+  }
+  .range-row {
+    display: flex; align-items: center; gap: 4px; margin-top: 4px;
+  }
+  .range-row label {
+    font-size: 9px; color: var(--gray-light); min-width: 30px;
+  }
+  .range-input {
+    background: var(--navy);
+    border: 1px solid var(--navy-light);
+    color: var(--white);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+    width: 70px;
+    font-family: 'Courier New', monospace;
+  }
+  .range-input:disabled { opacity: 0.4; }
+  .range-input:focus { outline: none; border-color: var(--orange); }
+  .auto-toggle {
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer; font-size: 10px; color: var(--gray-light);
+  }
+  .auto-toggle input[type="checkbox"] { cursor: pointer; }
+
   .stats-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
   }
@@ -225,36 +251,94 @@
   .stat-value.rms { color: var(--blue); }
   .stat-value.max { color: var(--green); }
   .stat-value.min { color: var(--red); }
-  .stat-unit {
-    font-size: 9px; color: var(--gray-light); margin-left: 2px;
-    font-family: 'Meiryo', sans-serif;
-  }
+  .stat-unit { font-size: 9px; color: var(--gray-light); margin-left: 2px; font-family: 'Meiryo', sans-serif; }
   .stat-sub { font-size: 8px; color: var(--gray); margin-top: 1px; }
 
   .waveform-container {
     background: var(--navy-deep);
     border-radius: 4px;
     padding: 6px;
-    flex: 1;
     position: relative;
   }
   .canvas-wrap { position: relative; height: 100%; }
   canvas { display: block; }
 
-  .fft-panel {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.4s ease, margin 0.4s ease;
-    padding: 0 12px;
-    margin: 0;
-  }
-  .fft-panel.active {
-    max-height: 360px;
-    opacity: 1;
+  /* Snapshot section */
+  .snapshot-section {
+    background: var(--navy);
+    border: 1px solid var(--navy-light);
+    border-radius: 6px;
     padding: 10px 12px;
-    margin-top: 0;
   }
+  .snapshot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .snap-slot {
+    background: var(--navy-deep);
+    border: 1px solid var(--navy-light);
+    border-radius: 4px;
+    height: 180px;
+    padding: 4px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .snap-slot.empty::after {
+    content: '空きスロット';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--gray);
+    font-size: 10px;
+  }
+  .snap-header {
+    font-size: 9px;
+    color: var(--orange);
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 4px;
+  }
+  .snap-peak {
+    font-size: 11px;
+    color: var(--orange-bright);
+    font-weight: bold;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+  }
+  .snap-canvas {
+    flex: 1;
+    background: #061026;
+    border-radius: 2px;
+    margin-top: 2px;
+  }
+  .snap-label {
+    font-size: 9px;
+    color: var(--white);
+    text-align: center;
+    padding: 2px;
+    background: var(--navy);
+    border-radius: 2px;
+    margin-top: 2px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .snap-delete {
+    cursor: pointer;
+    color: var(--red);
+    font-size: 12px;
+    line-height: 1;
+    padding: 0 2px;
+    background: transparent;
+    border: none;
+  }
+  .snap-delete:hover { color: var(--orange-bright); }
 
   .footer {
     min-height: 60px;
@@ -288,22 +372,20 @@
     background: var(--orange); color: var(--navy-deep);
     box-shadow: 0 0 12px rgba(232, 138, 10, 0.4);
   }
-  .btn-fft {
-    background: transparent; color: var(--blue);
-    border: 1px solid var(--blue);
-    padding: 9px 16px; font-size: 12px;
+  .btn-snap {
+    background: var(--orange); color: var(--navy-deep);
+    padding: 11px 22px; font-size: 14px;
+    box-shadow: 0 0 14px rgba(232, 138, 10, 0.4);
+    letter-spacing: 1px;
   }
-  .btn-fft.active {
-    background: var(--blue); color: var(--white);
-    box-shadow: 0 0 10px rgba(46, 142, 196, 0.4);
-  }
+  .btn-snap:hover { background: var(--orange-bright); }
   .btn-conn {
     background: var(--teal); color: var(--navy-deep);
     padding: 9px 16px; font-size: 12px;
   }
   .btn-conn.connected { background: var(--green); }
   .btn-strike {
-    background: var(--orange); color: var(--navy-deep);
+    background: var(--purple); color: var(--white);
     padding: 9px 14px; font-size: 11px;
   }
   .btn-strike:disabled { background: var(--navy-light); color: var(--gray); }
@@ -313,7 +395,12 @@
     padding: 8px 12px; font-size: 10px;
   }
   .btn-csv:hover { background: var(--orange); color: var(--navy-deep); }
-
+  .btn-clear {
+    background: transparent; color: var(--red);
+    border: 1px solid var(--red);
+    padding: 8px 12px; font-size: 10px;
+  }
+  .btn-clear:hover { background: var(--red); color: var(--white); }
   .sim-select {
     background: var(--navy-deep);
     border: 1px solid var(--navy-light);
@@ -324,7 +411,6 @@
     font-family: inherit;
   }
   .sim-select:disabled { opacity: 0.4; }
-
   .rec-counter {
     background: var(--navy-deep);
     padding: 5px 10px;
@@ -338,9 +424,7 @@
   }
   .rec-counter .num { color: var(--orange); font-weight: bold; font-size: 12px; }
   .rec-counter.active .num { color: var(--red); }
-  .divider {
-    width: 1px; height: 28px; background: var(--navy-light);
-  }
+  .divider { width: 1px; height: 28px; background: var(--navy-light); }
   .footer-info {
     flex: 1;
     font-size: 10px;
@@ -361,17 +445,17 @@
       <div class="logo">SchooMy</div>
       <div>
         <span class="system-title">NDT LAB</span>
-        <span class="system-sub">Serial × Fourier</span>
+        <span class="system-sub">Serial × Fourier × Snapshot</span>
       </div>
     </div>
     <div class="header-mid">
       <div class="input-group">
         <span class="input-label">📡 センサー:</span>
-        <input type="text" class="text-input" id="sensorInput" placeholder="例: 音センサー、光、振動" value="音センサー">
+        <input type="text" class="text-input" id="sensorInput" placeholder="例: 音、光、振動" value="音センサー">
       </div>
       <div class="input-group">
         <span class="input-label">📝 計測対象:</span>
-        <input type="text" class="text-input" id="memoInput" placeholder="例: ペットボトル満タン" value="無題">
+        <input type="text" class="text-input" id="memoInput" placeholder="例: ペット満タン" value="無題">
       </div>
     </div>
     <div class="header-right">
@@ -379,7 +463,7 @@
         <div class="led-dot" id="statusLed"></div>
         <span id="statusText">DISCONNECTED</span>
       </div>
-      <div>v4.0</div>
+      <div>v5.0</div>
     </div>
   </div>
 
@@ -408,7 +492,23 @@
         </div>
         <div class="conn-info" id="connInfo">
           <div class="conn-status" id="connStatus">未接続</div>
-          <div id="connDetail">「🔌 接続」ボタンを押してオレンジボードを選んでください</div>
+          <div id="connDetail">「🔌 接続」ボタンを押してください</div>
+        </div>
+
+        <div class="range-control">
+          <div class="range-title">📏 波形 Y軸レンジ</div>
+          <div class="auto-toggle">
+            <input type="checkbox" id="autoRange" checked>
+            <label for="autoRange">AUTO（自動調整）</label>
+          </div>
+          <div class="range-row">
+            <label>MIN:</label>
+            <input type="number" class="range-input" id="rangeMin" value="0" disabled>
+          </div>
+          <div class="range-row">
+            <label>MAX:</label>
+            <input type="number" class="range-input" id="rangeMax" value="1023" disabled>
+          </div>
         </div>
       </div>
 
@@ -416,20 +516,10 @@
         <div class="panel-title">REAL-TIME STATISTICS</div>
         <div class="panel-sub">リアルタイム計測統計</div>
         <div class="stats-grid">
-          <div class="stat-card peak">
-            <div class="stat-label">PEAK FREQ</div>
-            <div class="stat-value peak" id="statPeakFreq">--<span class="stat-unit">Hz</span></div>
-            <div class="stat-sub">最大強度の周波数</div>
-          </div>
-          <div class="stat-card peak">
-            <div class="stat-label">PEAK AMP</div>
-            <div class="stat-value peak" id="statPeakAmp">--</div>
-            <div class="stat-sub">ピークの強さ</div>
-          </div>
           <div class="stat-card rms">
             <div class="stat-label">RMS</div>
             <div class="stat-value rms" id="statRMS">0</div>
-            <div class="stat-sub">音の大きさ指標</div>
+            <div class="stat-sub">変動の大きさ</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">AVG</div>
@@ -454,23 +544,30 @@
     <!-- RIGHT COLUMN -->
     <div class="right-col">
 
-      <div class="panel" style="display:flex;flex-direction:column;height:fit-content;">
+      <div class="panel" style="display:flex;flex-direction:column;">
         <div class="panel-title">
           ① 時間波形 / TIME DOMAIN
-          <span style="margin-left:auto; font-size:9px; color:var(--gray-light); font-weight:normal; letter-spacing:0;">シリアルで受信した値をリアルタイム表示</span>
+          <span style="margin-left:auto; font-size:9px; color:var(--gray-light); font-weight:normal; letter-spacing:0;">
+            シリアル受信値をリアルタイム表示
+          </span>
         </div>
-        <div class="waveform-container" style="height:300px;">
+        <div class="waveform-container" style="height:240px;">
           <div class="canvas-wrap" id="waveform"></div>
         </div>
       </div>
 
-      <div class="panel fft-panel" id="fftPanel" style="display:flex;flex-direction:column;">
+      <div class="snapshot-section">
         <div class="panel-title">
-          ② 周波数スペクトラム / FFT (フーリエ変換)
-          <span style="margin-left:auto; font-size:9px; color:var(--gray-light); font-weight:normal; letter-spacing:0;">虚数の計算で波を周波数ごとに分解した結果</span>
+          📸 FFT スナップショット
+          <span style="margin-left:auto; font-size:9px; color:var(--gray-light); font-weight:normal; letter-spacing:0;">
+            「今を分析」ボタンで、その瞬間の周波数パターンを保存・比較
+          </span>
         </div>
-        <div class="waveform-container" style="height:280px;">
-          <div class="canvas-wrap" id="spectrum"></div>
+        <div class="snapshot-grid">
+          <div class="snap-slot empty" id="slot0"></div>
+          <div class="snap-slot empty" id="slot1"></div>
+          <div class="snap-slot empty" id="slot2"></div>
+          <div class="snap-slot empty" id="slot3"></div>
         </div>
       </div>
 
@@ -480,7 +577,8 @@
 
   <div class="footer">
     <button class="btn btn-conn" id="connectBtn">🔌 接続</button>
-    <button class="btn btn-fft" id="fftToggleBtn">📊 フーリエ変換 OFF</button>
+    <button class="btn btn-snap" id="snapBtn">📸 今を分析</button>
+    <button class="btn btn-clear" id="clearSnapBtn">🗑 全て消去</button>
     <div class="divider"></div>
     <button class="btn btn-record" id="recordBtn">⏺ 計測スタート</button>
     <div class="rec-counter" id="recCounter">
@@ -501,9 +599,8 @@
     </select>
     <div class="divider"></div>
     <button class="btn btn-csv" id="dlWaveBtn" disabled>📥 波形CSV</button>
-    <button class="btn btn-csv" id="dlSpecBtn" disabled>📥 FFT CSV</button>
     <div class="footer-info">
-      <span class="step">流れ:</span> ①接続 ②計測スタート ③叩く・揺らす ④ストップでCSV保存 ⑤フーリエ変換ボタンで周波数表示
+      <span class="step">流れ:</span> ①接続 ②叩く ③📸今を分析 → ピーク周波数が見える ④別の対象で繰り返して比較
     </div>
   </div>
 
@@ -513,30 +610,28 @@
 // ====== Constants ======
 const BUFFER_SIZE = 256;
 const FFT_SIZE = 256;
+const MAX_SNAPSHOTS = 4;
 
 // ====== State ======
 let serialPort = null;
 let serialReader = null;
 let isConnected = false;
 let serialBuffer = '';
-let receivedSampleRate = 100; // estimated
-let lastReceiveTime = 0;
+let receivedSampleRate = 100;
 let receiveCountWindow = [];
 
 let dataBuffer = new Array(BUFFER_SIZE).fill(512);
-let fftEnabled = false;
+let snapshots = [null, null, null, null];
 
 let isRecording = false;
 let recordStartTime = 0;
 let recWaveBuffer = [];
-let recSpecBuffer = [];
-let recLastSpecCapture = 0;
 
-let lastSpec = new Array(FFT_SIZE / 2).fill(0);
-let lastPeakFreq = 0;
-let lastPeakAmp = 0;
+// Range control
+let autoRange = true;
+let manualMin = 0, manualMax = 1023;
 
-// Simulation state
+// Simulation
 let isSimulating = false;
 let simTime = 0;
 let simEnv = 0;
@@ -556,6 +651,19 @@ const SIM_TARGETS = {
 // ====== Sensor name sync ======
 document.getElementById('sensorInput').addEventListener('input', (e) => {
   document.getElementById('sensorDisplay').textContent = e.target.value || '(未設定)';
+});
+
+// ====== Range control ======
+document.getElementById('autoRange').addEventListener('change', (e) => {
+  autoRange = e.target.checked;
+  document.getElementById('rangeMin').disabled = autoRange;
+  document.getElementById('rangeMax').disabled = autoRange;
+});
+document.getElementById('rangeMin').addEventListener('input', (e) => {
+  manualMin = parseInt(e.target.value) || 0;
+});
+document.getElementById('rangeMax').addEventListener('input', (e) => {
+  manualMax = parseInt(e.target.value) || 1023;
 });
 
 // ====== Web Serial API ======
@@ -579,7 +687,6 @@ async function connectSerial() {
     document.getElementById('simSelect').disabled = true;
     readLoop();
   } catch(e) {
-    console.error(e);
     alert('接続に失敗しました: ' + e.message);
   }
 }
@@ -596,7 +703,7 @@ async function disconnectSerial() {
       await serialPort.close();
       serialPort = null;
     }
-  } catch(e) { console.warn(e); }
+  } catch(e) {}
   document.getElementById('connectBtn').textContent = '🔌 接続';
   document.getElementById('connectBtn').classList.remove('connected');
   document.getElementById('statusLed').classList.remove('online');
@@ -618,9 +725,7 @@ async function readLoop() {
       if (done) break;
       if (value) processSerialChunk(value);
     }
-  } catch(e) {
-    console.warn('Read loop ended:', e);
-  }
+  } catch(e) {}
 }
 
 function processSerialChunk(chunk) {
@@ -631,9 +736,7 @@ function processSerialChunk(chunk) {
     const trimmed = line.trim();
     if (trimmed === '') continue;
     const n = parseInt(trimmed, 10);
-    if (!isNaN(n)) {
-      pushSample(n);
-    }
+    if (!isNaN(n)) pushSample(n);
   }
 }
 
@@ -642,7 +745,6 @@ function pushSample(val) {
   dataBuffer.shift();
   dataBuffer.push(clamped);
 
-  // estimate sample rate
   const now = performance.now();
   receiveCountWindow.push(now);
   while (receiveCountWindow.length > 0 && now - receiveCountWindow[0] > 1000) {
@@ -650,7 +752,6 @@ function pushSample(val) {
   }
   receivedSampleRate = Math.max(10, receiveCountWindow.length);
 
-  // record
   if (isRecording) {
     const elapsed = (Date.now() - recordStartTime) / 1000;
     recWaveBuffer.push({ t: elapsed.toFixed(4), value: clamped });
@@ -673,7 +774,7 @@ function simulationTick() {
   const target = SIM_TARGETS[simTargetType];
   let sample = 0;
   target.freqs.forEach((freq, idx) => {
-    const t = simTime / 100; // 100 samples/sec assumed
+    const t = simTime / 100;
     sample += target.amps[idx] * Math.sin(2 * Math.PI * freq * t);
   });
   sample *= simEnv;
@@ -690,61 +791,46 @@ setInterval(() => {
   if (isSimulating && !isConnected) simulationTick();
 }, 10);
 
-// ====== Analog display update ======
 function updateAnalogDisplay(val) {
   document.getElementById('analogValue').textContent = String(val).padStart(4, ' ');
   document.getElementById('analogBar').style.width = (val / 1023 * 100) + '%';
 }
 
-// ====== Stats calculation ======
+// ====== Stats ======
 function updateStats() {
-  let sum = 0, sumSq = 0, max = -Infinity, min = Infinity;
+  let sum = 0, max = -Infinity, min = Infinity;
   for (const v of dataBuffer) {
     if (v > max) max = v;
     if (v < min) min = v;
     sum += v;
-    sumSq += v * v;
   }
   const n = dataBuffer.length;
   const avg = sum / n;
-  const rms = Math.sqrt(sumSq / n);
+  let sumSqDev = 0;
+  for (const v of dataBuffer) sumSqDev += (v - avg) ** 2;
+  const rms = Math.sqrt(sumSqDev / n);
 
   document.getElementById('statMax').textContent = max;
   document.getElementById('statMin').textContent = min;
   document.getElementById('statAvg').textContent = Math.round(avg);
   document.getElementById('statRMS').textContent = rms.toFixed(1);
-
-  // Peak from last FFT
-  if (lastPeakAmp > 0) {
-    document.getElementById('statPeakFreq').innerHTML = lastPeakFreq.toFixed(1) + '<span class="stat-unit">Hz</span>';
-    document.getElementById('statPeakAmp').innerHTML = Math.round(lastPeakAmp);
-  } else {
-    document.getElementById('statPeakFreq').innerHTML = '--<span class="stat-unit">Hz</span>';
-    document.getElementById('statPeakAmp').innerHTML = '--';
-  }
 }
 
-// ====== Self-contained FFT (Cooley-Tukey) ======
+// ====== FFT ======
 function fft(realIn) {
   const N = realIn.length;
   let real = realIn.slice();
   let imag = new Array(N).fill(0);
-
-  // bit reverse
   let j = 0;
   for (let i = 1; i < N; i++) {
     let bit = N >> 1;
-    while (j & bit) {
-      j ^= bit;
-      bit >>= 1;
-    }
+    while (j & bit) { j ^= bit; bit >>= 1; }
     j ^= bit;
     if (i < j) {
       [real[i], real[j]] = [real[j], real[i]];
       [imag[i], imag[j]] = [imag[j], imag[i]];
     }
   }
-
   for (let len = 2; len <= N; len <<= 1) {
     const halfLen = len >> 1;
     const angle = -2 * Math.PI / len;
@@ -766,8 +852,6 @@ function fft(realIn) {
       }
     }
   }
-
-  // magnitude
   const mag = new Array(N / 2);
   for (let i = 0; i < N / 2; i++) {
     mag[i] = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
@@ -776,65 +860,172 @@ function fft(realIn) {
 }
 
 function computeFFT() {
-  // DC remove
   const avg = dataBuffer.reduce((a,b)=>a+b, 0) / dataBuffer.length;
   const windowed = new Array(BUFFER_SIZE);
   for (let i = 0; i < BUFFER_SIZE; i++) {
-    // Hann window
     const w = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (BUFFER_SIZE - 1));
     windowed[i] = (dataBuffer[i] - avg) * w;
   }
-  const mag = fft(windowed);
-
-  // find peak
-  let maxV = 0, maxI = 0;
-  for (let i = 1; i < mag.length; i++) {
-    if (mag[i] > maxV) { maxV = mag[i]; maxI = i; }
-  }
-  const binWidth = receivedSampleRate / FFT_SIZE;
-  lastPeakFreq = maxI * binWidth;
-  lastPeakAmp = maxV;
-
-  return mag;
+  return fft(windowed);
 }
 
-// ====== FFT toggle ======
-document.getElementById('fftToggleBtn').addEventListener('click', () => {
-  fftEnabled = !fftEnabled;
-  const btn = document.getElementById('fftToggleBtn');
-  const panel = document.getElementById('fftPanel');
-  if (fftEnabled) {
-    btn.textContent = '📊 フーリエ変換 ON';
-    btn.classList.add('active');
-    panel.classList.add('active');
-  } else {
-    btn.textContent = '📊 フーリエ変換 OFF';
-    btn.classList.remove('active');
-    panel.classList.remove('active');
+// ====== Snapshot ======
+document.getElementById('snapBtn').addEventListener('click', () => {
+  const spec = computeFFT();
+  let maxV = 0, maxI = 0;
+  for (let i = 1; i < spec.length; i++) {
+    if (spec[i] > maxV) { maxV = spec[i]; maxI = i; }
   }
+  const binWidth = receivedSampleRate / FFT_SIZE;
+  const peakFreq = maxI * binWidth;
+
+  const sensor = document.getElementById('sensorInput').value || '無題';
+  const memo = document.getElementById('memoInput').value || '無題';
+
+  const snap = {
+    spec: spec,
+    peakFreq: peakFreq,
+    peakAmp: maxV,
+    sampleRate: receivedSampleRate,
+    sensor: sensor,
+    memo: memo,
+    timestamp: new Date().toLocaleTimeString('ja-JP')
+  };
+
+  let placed = false;
+  for (let i = 0; i < MAX_SNAPSHOTS; i++) {
+    if (snapshots[i] === null) {
+      snapshots[i] = snap;
+      placed = true;
+      break;
+    }
+  }
+  if (!placed) {
+    snapshots.shift();
+    snapshots.push(snap);
+  }
+  renderSnapshots();
 });
 
-// ====== Connect button ======
+document.getElementById('clearSnapBtn').addEventListener('click', () => {
+  snapshots = [null, null, null, null];
+  renderSnapshots();
+});
+
+function renderSnapshots() {
+  for (let i = 0; i < MAX_SNAPSHOTS; i++) {
+    const slot = document.getElementById('slot' + i);
+    slot.innerHTML = '';
+    const snap = snapshots[i];
+    if (!snap) {
+      slot.classList.add('empty');
+      continue;
+    }
+    slot.classList.remove('empty');
+
+    const header = document.createElement('div');
+    header.className = 'snap-header';
+    header.innerHTML = `<span>#${i+1} ${snap.timestamp}</span>`;
+    const delBtn = document.createElement('button');
+    delBtn.className = 'snap-delete';
+    delBtn.textContent = '×';
+    delBtn.onclick = () => { snapshots[i] = null; renderSnapshots(); };
+    header.appendChild(delBtn);
+    slot.appendChild(header);
+
+    const peak = document.createElement('div');
+    peak.className = 'snap-peak';
+    peak.textContent = '▼ ' + snap.peakFreq.toFixed(1) + ' Hz';
+    slot.appendChild(peak);
+
+    const canvas = document.createElement('canvas');
+    canvas.className = 'snap-canvas';
+    canvas.width = 260;
+    canvas.height = 100;
+    slot.appendChild(canvas);
+
+    const label = document.createElement('div');
+    label.className = 'snap-label';
+    label.textContent = snap.sensor + ' / ' + snap.memo;
+    slot.appendChild(label);
+
+    setTimeout(() => drawSnapshot(canvas, snap), 10);
+  }
+}
+
+function drawSnapshot(canvas, snap) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = '#061026';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = '#1E3463';
+  ctx.lineWidth = 0.5;
+  for (let i = 1; i < 5; i++) {
+    const x = (w / 5) * i;
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+  }
+
+  const spec = snap.spec;
+  let maxV = 0;
+  for (const v of spec) if (v > maxV) maxV = v;
+  if (maxV < 1) maxV = 1;
+
+  const displayBins = spec.length;
+  const barWidth = w / displayBins;
+
+  let maxIdx = 0;
+  for (let i = 1; i < displayBins; i++) {
+    if (spec[i] > spec[maxIdx]) maxIdx = i;
+  }
+
+  for (let i = 0; i < displayBins; i++) {
+    const amp = spec[i];
+    const barH = (amp / maxV) * (h - 8);
+    const ratio = i / displayBins;
+    const r = Math.round(58 + (232 - 58) * ratio);
+    const g = Math.round(171 + (138 - 171) * ratio);
+    const b = Math.round(168 + (10 - 168) * ratio);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(i * barWidth, h - barH, Math.max(barWidth - 0.5, 0.5), barH);
+  }
+
+  if (spec[maxIdx] > maxV * 0.3) {
+    const peakX = maxIdx * barWidth + barWidth / 2;
+    ctx.strokeStyle = 'rgba(255, 80, 80, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(peakX, 0); ctx.lineTo(peakX, h); ctx.stroke();
+  }
+
+  ctx.fillStyle = '#B8C5D9';
+  ctx.font = '8px Meiryo';
+  const binWidth_hz = snap.sampleRate / FFT_SIZE;
+  for (let i = 0; i <= 4; i++) {
+    const x = (w / 4) * i;
+    const freq = (displayBins / 4 * i) * binWidth_hz;
+    ctx.textAlign = 'center';
+    ctx.fillText(freq.toFixed(0) + 'Hz', x, h - 2);
+  }
+}
+
+// ====== Connect ======
 document.getElementById('connectBtn').addEventListener('click', () => {
   if (!isConnected) connectSerial();
   else disconnectSerial();
 });
 
-// ====== Record button ======
+// ====== Record ======
 document.getElementById('recordBtn').addEventListener('click', () => {
   if (!isRecording) {
     isRecording = true;
     recordStartTime = Date.now();
     recWaveBuffer = [];
-    recSpecBuffer = [];
-    recLastSpecCapture = 0;
     document.getElementById('recordBtn').textContent = '⏹ 計測ストップ';
     document.getElementById('recordBtn').classList.add('recording');
     document.getElementById('recCounter').classList.add('active');
     document.getElementById('statusLed').classList.add('recording');
     document.getElementById('statusText').textContent = 'RECORDING…';
     document.getElementById('dlWaveBtn').disabled = true;
-    document.getElementById('dlSpecBtn').disabled = true;
   } else {
     isRecording = false;
     document.getElementById('recordBtn').textContent = '⏺ 計測スタート';
@@ -843,7 +1034,6 @@ document.getElementById('recordBtn').addEventListener('click', () => {
     document.getElementById('statusLed').classList.remove('recording');
     document.getElementById('statusText').textContent = isConnected ? 'CONNECTED' : 'DISCONNECTED';
     if (recWaveBuffer.length > 0) document.getElementById('dlWaveBtn').disabled = false;
-    if (recSpecBuffer.length > 0) document.getElementById('dlSpecBtn').disabled = false;
   }
 });
 
@@ -855,7 +1045,7 @@ function updateRecCounter() {
 }
 setInterval(updateRecCounter, 100);
 
-// ====== CSV download ======
+// ====== CSV ======
 function safeFilename(s) {
   return (s || 'untitled').replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, '_');
 }
@@ -878,53 +1068,28 @@ function downloadCSV(filename, content) {
 
 document.getElementById('dlWaveBtn').addEventListener('click', () => {
   if (recWaveBuffer.length === 0) return;
-  const sensor = document.getElementById('sensorInput').value || '無題センサー';
+  const sensor = document.getElementById('sensorInput').value || '無題';
   const memo = document.getElementById('memoInput').value || '無題';
-  const now = new Date();
-  let csv = '# SchooMy NDT Lab v4.0 - 時間波形データ\n';
+  let csv = '# SchooMy NDT Lab v5.0 - 時間波形データ\n';
   csv += '# センサー: ' + sensor + '\n';
   csv += '# 計測対象: ' + memo + '\n';
-  csv += '# 計測日時: ' + now.toLocaleString('ja-JP') + '\n';
+  csv += '# 計測日時: ' + new Date().toLocaleString('ja-JP') + '\n';
   csv += '# サンプル数: ' + recWaveBuffer.length + '\n';
-  csv += '# 推定サンプリングレート: ' + receivedSampleRate + ' Hz\n';
+  csv += '# サンプリングレート: ' + receivedSampleRate + ' Hz\n';
   csv += '#\n';
   csv += 'time_sec,analog_value\n';
   recWaveBuffer.forEach(r => { csv += r.t + ',' + r.value + '\n'; });
   downloadCSV(`NDT_wave_${safeFilename(sensor)}_${safeFilename(memo)}_${tsString()}.csv`, csv);
 });
 
-document.getElementById('dlSpecBtn').addEventListener('click', () => {
-  if (recSpecBuffer.length === 0) return;
-  const sensor = document.getElementById('sensorInput').value || '無題センサー';
-  const memo = document.getElementById('memoInput').value || '無題';
-  const now = new Date();
-  let csv = '# SchooMy NDT Lab v4.0 - FFTスペクトラムデータ\n';
-  csv += '# センサー: ' + sensor + '\n';
-  csv += '# 計測対象: ' + memo + '\n';
-  csv += '# 計測日時: ' + now.toLocaleString('ja-JP') + '\n';
-  csv += '# スナップショット数: ' + recSpecBuffer.length + '\n';
-  csv += '# サンプリングレート: ' + receivedSampleRate + ' Hz\n';
-  csv += '#\n';
-  const firstBins = recSpecBuffer[0].bins;
-  csv += 'time_sec,' + firstBins.map(b => b.freq.toFixed(2) + 'Hz').join(',') + '\n';
-  recSpecBuffer.forEach(snap => {
-    csv += snap.t + ',' + snap.bins.map(b => b.amp.toFixed(2)).join(',') + '\n';
-  });
-  downloadCSV(`NDT_fft_${safeFilename(sensor)}_${safeFilename(memo)}_${tsString()}.csv`, csv);
-});
-
 // ====== Canvas drawing ======
 const waveCanvas = document.createElement('canvas');
-const specCanvas = document.createElement('canvas');
 document.getElementById('waveform').appendChild(waveCanvas);
-document.getElementById('spectrum').appendChild(specCanvas);
 
 function resizeCanvases() {
-  [['waveform', waveCanvas], ['spectrum', specCanvas]].forEach(([id, c]) => {
-    const parent = document.getElementById(id);
-    c.width = parent.clientWidth;
-    c.height = parent.clientHeight;
-  });
+  const parent = document.getElementById('waveform');
+  waveCanvas.width = parent.clientWidth;
+  waveCanvas.height = parent.clientHeight;
 }
 window.addEventListener('resize', resizeCanvases);
 
@@ -947,8 +1112,23 @@ function drawWaveform() {
   const ctx = waveCanvas.getContext('2d');
   const w = waveCanvas.width, h = waveCanvas.height;
   drawGrid(ctx, w, h);
-  ctx.strokeStyle = '#3C5A8C';
-  ctx.beginPath(); ctx.moveTo(0, h/2); ctx.lineTo(w, h/2); ctx.stroke();
+
+  let yMin, yMax;
+  if (autoRange) {
+    yMin = Math.min(...dataBuffer);
+    yMax = Math.max(...dataBuffer);
+    const padding = Math.max(10, (yMax - yMin) * 0.15);
+    yMin -= padding;
+    yMax += padding;
+    if (yMax - yMin < 5) {
+      const mid = (yMax + yMin) / 2;
+      yMin = mid - 10;
+      yMax = mid + 10;
+    }
+  } else {
+    yMin = manualMin;
+    yMax = manualMax;
+  }
 
   if (!isConnected && !isSimulating && dataBuffer.every(v => v === 512)) {
     ctx.fillStyle = '#6B7A99';
@@ -958,111 +1138,45 @@ function drawWaveform() {
     return;
   }
 
+  if (yMin < 0 && yMax > 0) {
+    const zeroY = h - (0 - yMin) / (yMax - yMin) * h;
+    ctx.strokeStyle = '#3C5A8C';
+    ctx.beginPath(); ctx.moveTo(0, zeroY); ctx.lineTo(w, zeroY); ctx.stroke();
+  }
+
   ctx.strokeStyle = '#3AABA8';
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   for (let i = 0; i < dataBuffer.length; i++) {
     const x = (i / (dataBuffer.length - 1)) * w;
-    const y = h - (dataBuffer[i] / 1023) * h;
+    const y = h - ((dataBuffer[i] - yMin) / (yMax - yMin)) * h;
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
   ctx.fillStyle = '#B8C5D9';
-  ctx.font = '10px Meiryo';
+  ctx.font = '10px Courier New';
   ctx.textAlign = 'left';
-  ctx.fillText('時間 →', 8, h - 6);
+  ctx.fillText(Math.round(yMax).toString(), 4, 12);
+  ctx.fillText(Math.round(yMin).toString(), 4, h - 6);
+  ctx.fillText(Math.round((yMax+yMin)/2).toString(), 4, h/2 + 4);
+
   ctx.textAlign = 'right';
-  ctx.fillText('値 (0-1023)', w - 8, 14);
-  ctx.fillText(receivedSampleRate + ' Hz', w - 8, 28);
-}
-
-function drawSpectrum() {
-  if (!fftEnabled) return;
-  const ctx = specCanvas.getContext('2d');
-  const w = specCanvas.width, h = specCanvas.height;
-  drawGrid(ctx, w, h);
-
-  const spec = computeFFT();
-  lastSpec = spec;
-
-  // record snapshot
-  if (isRecording) {
-    const elapsed = (Date.now() - recordStartTime) / 1000;
-    if (elapsed - recLastSpecCapture > 0.2) {
-      recLastSpecCapture = elapsed;
-      const binWidth = receivedSampleRate / FFT_SIZE;
-      const snap = { t: elapsed.toFixed(4), bins: [] };
-      for (let i = 0; i < spec.length; i++) {
-        snap.bins.push({ freq: i * binWidth, amp: spec[i] });
-      }
-      recSpecBuffer.push(snap);
-    }
-  }
-
-  // find max for scaling
-  let maxV = 0;
-  for (const v of spec) if (v > maxV) maxV = v;
-  if (maxV < 1) maxV = 1;
-
-  const displayBins = spec.length;
-  const barWidth = w / displayBins;
-
-  let maxIdx = 0;
-  for (let i = 1; i < displayBins; i++) {
-    if (spec[i] > spec[maxIdx]) maxIdx = i;
-  }
-
-  for (let i = 0; i < displayBins; i++) {
-    const amp = spec[i];
-    const barH = (amp / maxV) * (h - 20);
-    const ratio = i / displayBins;
-    const r = Math.round(58 + (232 - 58) * ratio);
-    const g = Math.round(171 + (138 - 171) * ratio);
-    const b = Math.round(168 + (10 - 168) * ratio);
-    ctx.fillStyle = `rgb(${r},${g},${b})`;
-    ctx.fillRect(i * barWidth, h - barH, barWidth - 0.5, barH);
-  }
-
-  // peak marker
-  if (spec[maxIdx] > maxV * 0.3) {
-    const peakX = maxIdx * barWidth + barWidth / 2;
-    const binWidth_hz = receivedSampleRate / FFT_SIZE;
-    const peakFreq = maxIdx * binWidth_hz;
-    ctx.strokeStyle = 'rgba(255, 80, 80, 0.8)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(peakX, 0); ctx.lineTo(peakX, h); ctx.stroke();
-    ctx.fillStyle = '#FF5050';
-    ctx.font = '10px Meiryo';
-    ctx.textAlign = 'center';
-    ctx.fillText('▼ ' + peakFreq.toFixed(1) + 'Hz', peakX, 12);
-  }
-
-  // axis labels
-  ctx.fillStyle = '#B8C5D9';
-  ctx.font = '9px Meiryo';
-  for (let i = 0; i <= 5; i++) {
-    const x = (w / 5) * i;
-    const binWidth_hz = receivedSampleRate / FFT_SIZE;
-    const freq = (displayBins / 5 * i) * binWidth_hz;
-    ctx.textAlign = 'center';
-    ctx.fillText(freq.toFixed(1) + 'Hz', x, h - 4);
-  }
-  ctx.textAlign = 'right';
-  ctx.fillText('強さ', w - 8, 14);
+  ctx.font = '10px Meiryo';
+  ctx.fillText(receivedSampleRate + ' Hz', w - 8, 14);
+  ctx.fillText('時間 →', w - 8, h - 6);
 }
 
 function animLoop() {
   drawWaveform();
-  drawSpectrum();
   updateStats();
   requestAnimationFrame(animLoop);
 }
 
-// Init
 setTimeout(() => {
   resizeCanvases();
   animLoop();
+  renderSnapshots();
 }, 100);
 
 </script>
